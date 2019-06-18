@@ -1,0 +1,103 @@
+#!/usr/bin/python
+'''
+Cuaca - CLI Prakiraan Cuaca
+Ambil data dari BMKG
+LICENCE MIT
+@copyright Rifqi Khoeruman Azam <pravodev@gmail.com>
+'''
+from pathlib import Path
+from bs4 import BeautifulSoup
+import requests
+import json
+import time
+import sys
+
+# VARIABLE
+URL = "http://www.bmkg.go.id/cuaca/prakiraan-cuaca-indonesia.bmkg"
+LOCAL_TIME = time.asctime( time.localtime(time.time()) )
+
+# detect location from an IP Address
+def getLocation():
+    res = requests.get("https://ipinfo.io")
+    return res.json()
+
+# parse province to dictionary type
+def parseProvinces(province):
+    return { province.get_text(): province.get('href') }
+
+# retrive province 
+def getProvinces(name = ""):
+    temp = Path('./temp_provinces.json')
+    if(temp.is_file()):
+        data = json.load(temp.open('r'))
+    else:
+        res = requests.get(URL)
+        soup = BeautifulSoup(res.text, 'lxml')
+        provinces_element = soup.find('div', {'class': 'row list-cuaca-provinsi md-margin-bottom-10'})
+        data = {}
+        for provinces in provinces_element.find_all('a'):
+            data[provinces.get_text()] = provinces.get('href')
+
+        f = temp.open('w+')
+        f.write(json.dumps(data))
+
+    if(name):
+        return data[name]
+
+    return data
+
+def getCities(province):
+    res = requests.get(URL+province)
+    soup = BeautifulSoup(res.text, 'lxml')
+    # cities_element = soup.find('')
+    print(URL+province)
+
+def getWeather(city, province):
+    res = requests.get(URL+province)
+    soup = BeautifulSoup(res.text, 'lxml')
+    list_weathers = soup.find('table', {"class": "table table-hover table-striped table-prakicu-provinsi"})
+    weather_of_city = list_weathers.find('td', text=city).parent.find_all('td')
+    times = ['Pagi', 'Siang', 'Malam', 'Dini Hari']
+    jumlah_td = len(weather_of_city) 
+    total_td = 7
+    selisih = total_td - jumlah_td
+    data = {}
+
+    index = 0
+    for time in times[selisih:len(times)]:
+        data[time] = weather_of_city[index+1].get_text()
+        index += 1
+
+    return data
+
+def _help():
+    print("perintah tersedia:")
+    print("- cuaca hari ini")
+    print("- cuaca sekarang")
+
+def _getWeatherToday():
+    location = getLocation()
+    province = getProvinces(location.get("region"))
+    weathers = getWeather(location.get("city"), province)
+
+    print("Prakiraan Cuaca di {} pada {} ".format(location.get('city'), LOCAL_TIME))
+    for cuaca, title in weathers.items():
+        print("{}: {}".format(cuaca,title), )
+
+def _getWeatherNow():
+    location = getLocation()
+    province = getProvinces(location.get("region"))
+    weathers = getWeather(location.get("city"), province)
+    print(list(weathers.values())[0])
+
+argument_value = ' '.join(sys.argv[1:len(sys.argv)])
+
+arguments = {
+    "hari ini": _getWeatherToday,
+    "sekarang": _getWeatherNow
+}
+
+if(argument_value == ''):
+    _help()
+else:
+    arguments[argument_value]()
