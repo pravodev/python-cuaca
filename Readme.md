@@ -35,3 +35,6 @@ wget
 ```
 cp ./cuaca /usr/bin/cuaca
 ```
+
+# Licence
+MIT
