@@ -35,6 +35,10 @@ wget https://raw.githubusercontent.com/pravodev/python-cuaca/master/cuaca
 ```
 cp ./cuaca /usr/bin/cuaca
 ```
+Jalankan perintah `cuaca` diterminal, jika muncul error ubah permission nya 
+```
+sudo chmod +x /usr/bin/cuaca
+```
 
 # Licence
 [MIT](https://www.google.com)
