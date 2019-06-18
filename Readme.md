@@ -25,11 +25,11 @@ pip install beautifulsoup4
 ```
 - Download `cuaca` dengan menjalankan perintah dibawah ini
 ```
-curl 
+curl -O https://raw.githubusercontent.com/pravodev/python-cuaca/master/cuaca
 ```
 atau
 ```
-wget 
+wget https://raw.githubusercontent.com/pravodev/python-cuaca/master/cuaca
 ```
 - pindahkan file nya kedalam folder bin sistem operasi Anda, untuk linux biasanya ada di /usr/bin
 ```
@@ -37,4 +37,4 @@ cp ./cuaca /usr/bin/cuaca
 ```
 
 # Licence
-MIT
+[MIT](https://www.google.com)
